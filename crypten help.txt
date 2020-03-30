@@ -1,0 +1,9 @@
+crypten [options] {-r=<recipient>|--recipient=<recipient>} <file1> [<file2> ...]
+ - crypten is a script to encrypt file using gpg
+
+ arguments:
+ 	-h, --help					Display this help message
+	-n, --nodelete				Don't delete files after encrypting them
+	-q, --quiet					Be as quite as possible
+	-r, --recipient required	GPG Recipient identifier to encrypt to
+	-u, --user					GPG User to encrypt as

@@ -1,0 +1,95 @@
+# crypten by Sam Thacker
+
+# Longform help
+function help(){
+    echo "crypten [options] {-r=<recipient>|--recipient=<recipient>} <file1> [<file2> ...]"
+    echo " - crypten is a script to encrypt files using gpg"
+    echo ""
+    echo " arguments:"
+    echo "  -h, --help                  Display this help message"
+    echo "  -n, --nodelete              Don't delete files after encrypting them"
+    echo "  -q, --quiet                 Be as quite as possible"
+    echo "  -r, --recipient required    GPG Recipient identifier to encrypt to"
+    echo "  -u, --user                  GPG User to encrypt as"
+}
+
+# If not quiet (nq), display arg text
+function nq(){
+    if [ -z "$QUIET" ]
+    then
+        echo $1
+    fi
+}
+
+# Default values of arguments
+
+# No args small help
+if (( $# == 0 )); then
+    echo "crypten [options] {-r=<recipient>|--recipient=<recipient>} <file1> [<file2> ...]"
+    echo "  - crypten is a script to encrypt files using gpg"
+    echo ""
+    echo "Use -h for help"
+    exit
+fi
+
+# Loop through arguments and process them
+for arg in "$@"
+do
+    case $arg in
+        -h|--help)
+        help
+        exit
+        ;;
+        -r=*|--recipient=*)
+        GPG_RECIPIENT="${arg#*=}"
+        shift # Remove --recipient= from processing
+        ;;
+        -n|--nodelete)
+        NO_DELETE=1
+        shift # Remove --nodelete from processing
+        ;;
+        -q|--quiet)
+        QUIET=1
+        ;;
+        *)
+        OTHER_ARGUMENTS+=("$1")
+        shift # Remove generic argument from processing
+        ;;
+    esac
+done
+
+nq "crypten running..."
+
+echo "All args: $@"
+
+nq "TesT"
+exit
+
+if [ -z "$GPG_RECIPIENT" ]; then
+    echo "No recipient GPG key specified."
+    exit
+fi
+
+echo "Recipient is $GPG_RECIPIENT"
+echo "No delete is $NO_DELETE"
+
+echo "Remaining args: $OTHER_ARGUMENTS"
+
+for FNAME in "$@"; do
+    # Check if FNAME exists
+    if [ -z "$FNAME" ]
+    then
+        echo "$FNAME: No such file"
+    else
+        nq "Encrypting $FNAME..."
+        gpg -e -r $GPG_RECIPIENT "$FNAME"
+        nq "Done."
+        nq "Confirming complete..."
+        if test -f "$FNAME.gpg"; then
+            nq "$FNAME.gpg exists"
+        else
+            echo "$FNAME.gpg was not found. Aborting."
+            exit
+        fi
+    fi
+done
